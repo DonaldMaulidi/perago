@@ -66,6 +66,16 @@ public class Diff<T extends Serializable> implements DiffEngine {
     public <T extends Serializable> Diff<T> calculate(T original, T modified) throws DiffException {
         Diff<T> newDiffObj = new Diff<>();
 
+        if (isNull(original) && isNull(modified)) {
+            throw new DiffException("Objects cannot be null!");
+        }
+
+        if (nonNull(original) && nonNull(modified)) {
+            if (!original.getClass().equals(modified.getClass())) {
+                throw new DiffException("Objects not of the same type!");
+            }
+        }
+
         if (isNull(original)) {
             try {
                 T newInstance = (T) modified.getClass().newInstance();
@@ -109,7 +119,6 @@ public class Diff<T extends Serializable> implements DiffEngine {
         } else {
             diffList.add(new Diff<T>(create, original, apply, modified.getClass().getSimpleName()));
         }
-
 
         diffList.stream().forEach(diff -> {
             try {

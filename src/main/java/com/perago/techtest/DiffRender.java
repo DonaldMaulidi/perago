@@ -26,7 +26,6 @@ public class DiffRender implements DiffRenderer {
                     Object modifiedValue = modifiedField.get(modified);
                     if (isNull(modifiedValue)) {
                         System.out.printf("%d.%d %s: %s as %s\n", i, j, CREATE, modifiedField.getName(), null);
-                        j++;
                     } else if (modifiedField.getName() != "serialVersionUID" && modifiedField.getName() != "pet" && !modifiedField.getType().isInstance(modified)) {
                         System.out.printf("%d.%d %s: %s as %s\n", i, j, CREATE, modifiedField.getName(), getValue(modified, modifiedField));
                     } else if (modifiedField.getType().isInstance(modified)) {
@@ -170,7 +169,6 @@ public class DiffRender implements DiffRenderer {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 }

@@ -112,6 +112,20 @@ public class DiffTest {
         assertNotNull(diff);
     }
 
+    @Test (expected=DiffException.class)
+    public void diffShouldThrowExceptionIfBothObjectsAreNull() throws Exception {
+        DiffEngine diffEngine = new Diff();
+
+        diffEngine.calculate(null, null);
+    }
+
+    @Test (expected=DiffException.class)
+    public void diffShouldThrowExceptionIfObjectsAreNotOfTheSameType() throws Exception {
+        DiffEngine diffEngine = new Diff();
+
+        diffEngine.calculate(getOriginalPet(), getModifiedFriend());
+    }
+
     private Person getOriginalFriend() {
         Person person = new Person();
 
