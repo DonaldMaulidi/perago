@@ -1,0 +1,63 @@
+   ### Perago Diff Service
+--------------------
+
+#### Objective
+> **The goal of this exercise is to create a library that provides:**
+
+ 1. A diff service that:
+  - can calculate the differences between two objects and return the resulting "diff".
+ - can apply a previously created "diff" against an original object, so that the returned object matches the modified object that was used to calculate the diff.
+ 2. A diff renderer component that can display a "diff" in a hierarchical, human-readable format
+
+#### Specification
+
+ 1. The diff service must implement the DiffEngine interface (see provided source).
+ 2. The diff renderer must implement the DiffRenderer interface (see provided source).
+
+>>> Your solution must use the above interfaces as provided. `DiffEngine.java` and `DiffRenderer.java` must not be modified.
+
+>>> You are free to implement the details of the `Diff.java` and `DiffException.java` classes as you see fit (within the constraints specified by the requirements below).
+
+#### Detailed Requirements and Examples
+>> The diff service and diff renderer must satisfy the below requirements and should be capable of handling the illustrative examples. **Please also provide unit-tests that verify your implementation.**
+
+>> List any assumptions you made that the correctness of your implementation depends on.
+It is not necessarily expected that you will be able to satisfy all of the requirements in the allocated time. However, the more complete your implementation, the more favourably it is likely to be scored. For any requirements that you are unable to complete in the allocated time, please explain what made implementing them challenging, and how you could possibly satisfy them if you had more time. 
+
+> **Requirement 1**
+
+> - Diffs must reflect all information that was created/updated/deleted. Information that was not changed must not be reflected in a Diff.
+> - A Diff object must not contain a reference to the modified object or a reference to a clone of the modified object.
+
+> **Requirement 2**
+
+> - diffService.calculate() and diffService.apply() must not modify or change the objects that were passed in as their parameters. 
+
+> **Requirement 3**
+
+> - A null original object diffed against non-null modified object must reflect as being “created” in diff.  
+> - A non-null original object diffed against null modified object must reflect as being “deleted” in diff.
+> - Non-null original object diffed against non-null modified object must reflect as being “updated” if there are properties of original whose values differ from the properties of modified.
+
+> **Requirement 4**
+
+> - Properties of original must in reflected as “updated” if their value differs from that of modified.
+
+> **Requirement 5**
+
+> - Diffs must recursively reflect modifications to all child objects
+
+> **Requirement 6**
+
+> - Properties of original or modified that are collections (arrays, sets, lists, maps etc.) must be taken into consideration when calculating and applying diffs
+
+> **Requirement 7**
+
+> - Cyclic relationships in original or modified should be taken into consideration when calculating and applying diffs
+
+> **Examples**
+>> In all examples below, the value of the “diff” argument passed to diffRenderer is assumed to be the output of `diffService.calculate(original,modified)`.
+
+>> For all examples, the result returned from `diffService.apply(original,diff)` must be equal to modified. i.e.
+> - If `modified == null` , then `diffService.apply(original,diff) == null`
+> - Otherwise, `modified.equals(diffService.apply(original,diff)) == true`
