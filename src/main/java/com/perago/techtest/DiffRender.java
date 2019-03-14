@@ -8,13 +8,22 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class DiffRender implements DiffRenderer {
+
+    private static final String UPDATE = "Update";
+    private static final String DELETE = "Delete";
+    private static final String CREATE = "Create";
+    private static final String SERIAL_VERSION_UID = "serialVersionUID";
+    private static final String PET = "pet";
+    private static final String FRIEND = "friend";
+    private static final String NICK_NAMES = "nickNames";
+
     @Override
     public String render(Diff<?> diff) throws DiffException {
         int i = 1;
-        if (diff.diffMethod == CREATE) {
+        if (diff.diffMethod == DiffMethod.CREATE) {
             Serializable modified = diff.modifiedValue;
 
-            System.out.printf("%d %s: %s\n", i, "Create", modified.getClass().getSimpleName());
+            System.out.printf("%d %s: %s\n", i, CREATE, modified.getClass().getSimpleName());
             Field[] declaredFields = modified.getClass().getDeclaredFields();
             for (int j = 0, declaredFieldsLength = declaredFields.length; j < declaredFieldsLength; j++) {
                 Field modifiedField = declaredFields[j];
@@ -23,15 +32,15 @@ public class DiffRender implements DiffRenderer {
                 try {
                     Object modifiedValue = modifiedField.get(modified);
                     if (isNull(modifiedValue)) {
-                        System.out.printf("%d.%d %s: %s as %s\n", i, j, "Create", modifiedField.getName(), null);
-                    } else if (modifiedField.getName() != "serialVersionUID" && modifiedField.getName() != "pet" && !modifiedField.getType().isInstance(modified)) {
-                        System.out.printf("%d.%d %s: %s as %s\n", i, j, "Create", modifiedField.getName(), getValue(modified, modifiedField));
+                        System.out.printf("%d.%d %s: %s as %s\n", i, j, CREATE, modifiedField.getName(), null);
+                    } else if (modifiedField.getName() != SERIAL_VERSION_UID && modifiedField.getName() != PET && !modifiedField.getType().isInstance(modified)) {
+                        System.out.printf("%d.%d %s: %s as %s\n", i, j, CREATE, modifiedField.getName(), getValue(modified, modifiedField));
                     } else if (modifiedField.getType().isInstance(modified)) {
-                        System.out.printf("%d.%d %s: %s\n", i, j, "Create", modifiedField.getName());
+                        System.out.printf("%d.%d %s: %s\n", i, j, CREATE, modifiedField.getName());
                         createObject(modified, modifiedField, i, j);
-                    } else if (modifiedField.getName() == "pet") {
-                        System.out.printf("%d.%d %s: %s\n", i, j, "Create", modifiedField.getName());
-                        if (modifiedField.getName() != "serialVersionUID") {
+                    } else if (modifiedField.getName() == PET) {
+                        System.out.printf("%d.%d %s: %s\n", i, j, CREATE, modifiedField.getName());
+                        if (modifiedField.getName() != SERIAL_VERSION_UID) {
                             createObject(modified, modifiedField, i, j);
                         }
                     }
@@ -39,16 +48,16 @@ public class DiffRender implements DiffRenderer {
                     e.printStackTrace();
                 }
             }
-        } else if (diff.diffMethod == DELETE) {
+        } else if (diff.diffMethod == DiffMethod.DELETE) {
             if (isNull(diff.modifiedValue)) {
-                System.out.printf("%d %s: %s\n", i, "Delete", diff.clazz);
+                System.out.printf("%d %s: %s\n", i, DELETE, diff.clazz);
             }
-        } else if (diff.diffMethod == UPDATE) {
+        } else if (diff.diffMethod == DiffMethod.UPDATE) {
             if (nonNull(diff.originalValue) && nonNull(diff.modifiedValue)) {
                 Serializable original = diff.originalValue;
                 Serializable modified = diff.modifiedValue;
 
-                System.out.printf("%d %s: %s\n", i, "Update", modified.getClass().getSimpleName());
+                System.out.printf("%d %s: %s\n", i, UPDATE, modified.getClass().getSimpleName());
                 Field[] originalDeclaredFields = original.getClass().getDeclaredFields();
                 for (int j = 0, originalFieldsLength = originalDeclaredFields.length; j < originalFieldsLength; j++) {
                     Field originalField = originalDeclaredFields[j];
@@ -61,28 +70,28 @@ public class DiffRender implements DiffRenderer {
                         Serializable originalValue = getValue(original, originalField);
                         Serializable modifiedValue = getValue(modified, modifiedField);
 
-                        if (originalValue != null && modifiedValue != null && originalField.getName() == modifiedField.getName() && originalValue.toString() != modifiedValue.toString() && originalField.getName() != "serialVersionUID") {
-                            if (originalField.getName() != "friend" && originalField.getName() != "pet" && originalField.getName() != "nickNames") {
-                                System.out.printf("%d.%d %s: %s from %s to %s\n", i, j, "Update", originalField.getName(), originalValue.toString(), modifiedValue.toString());
+                        if (originalValue != null && modifiedValue != null && originalField.getName() == modifiedField.getName() && originalValue.toString() != modifiedValue.toString() && originalField.getName() != SERIAL_VERSION_UID) {
+                            if (originalField.getName() != FRIEND && originalField.getName() != PET && originalField.getName() != NICK_NAMES) {
+                                System.out.printf("%d.%d %s: %s from %s to %s\n", i, j, UPDATE, originalField.getName(), originalValue.toString(), modifiedValue.toString());
                             }
 
                             if (modifiedField.getType().isInstance(modified)) {
                                 updateObject(originalField, modifiedField, original, modified, i, j, k);
-                            } else if (originalField.getName() == "pet") {
+                            } else if (originalField.getName() == PET) {
                                 updateObject(originalField, modifiedField, original, modified, i, j, k);
                             } else {
-                                if (originalField.getName() == "nickNames") {
-                                    if (nonNull(originalValue) && nonNull(modifiedValue) && originalField.getName() == modifiedField.getName() && originalValue != modifiedValue && originalField.getName() != "serialVersionUID") {
-                                        System.out.printf("%d.%d %s: %s from %s to %s\n", i, j, "Update", originalField.getName(), originalValue, modifiedValue);
+                                if (originalField.getName() == NICK_NAMES) {
+                                    if (nonNull(originalValue) && nonNull(modifiedValue) && originalField.getName() == modifiedField.getName() && originalValue != modifiedValue && originalField.getName() != SERIAL_VERSION_UID) {
+                                        System.out.printf("%d.%d %s: %s from %s to %s\n", i, j, UPDATE, originalField.getName(), originalValue, modifiedValue);
                                     }
                                 }
                             }
                         } else if (originalValue == null && modifiedValue != null && originalField.getName() == modifiedField.getName()) {
-                            System.out.printf("%d.%d %s: %s\n", i, j, "Update", modifiedField.getName());
-                            if (modifiedField.getName() != "nickNames") {
-                                System.out.printf("%d.%d.%d %s: %s\n", i, j, k, "Create", modifiedValue.getClass().getSimpleName());
+                            System.out.printf("%d.%d %s: %s\n", i, j, UPDATE, modifiedField.getName());
+                            if (modifiedField.getName() != NICK_NAMES) {
+                                System.out.printf("%d.%d.%d %s: %s\n", i, j, k, CREATE, modifiedValue.getClass().getSimpleName());
                             } else {
-                                System.out.printf("%d.%d.%d %s: %s\n", i, j, k, "Create", modifiedField.getName());
+                                System.out.printf("%d.%d.%d %s: %s\n", i, j, k, CREATE, modifiedField.getName());
                             }
 
                             if (modifiedField.getType().isInstance(modified)) {
@@ -94,23 +103,23 @@ public class DiffRender implements DiffRenderer {
                                     try {
                                         Object modifiedSubValue = modifiedSubField.get(modifiedField.get(modified));
 
-                                        if (isNull(modifiedSubValue) && modifiedSubField.getName() != "serialVersionUID") {
-                                            System.out.printf("%d.%d.%d.%d %s: %s as %s\n", i, j, k-2, l, "Create", modifiedSubField.getName(), null);
-                                        } else if (modifiedSubField.getName() != "serialVersionUID") {
-                                            System.out.printf("%d.%d.%d.%d %s: %s as %s\n", i, j, k-2, l, "Create", modifiedSubField.getName(), modifiedSubValue);
+                                        if (isNull(modifiedSubValue) && modifiedSubField.getName() != SERIAL_VERSION_UID) {
+                                            System.out.printf("%d.%d.%d.%d %s: %s as %s\n", i, j, k-2, l, CREATE, modifiedSubField.getName(), null);
+                                        } else if (modifiedSubField.getName() != SERIAL_VERSION_UID) {
+                                            System.out.printf("%d.%d.%d.%d %s: %s as %s\n", i, j, k-2, l, CREATE, modifiedSubField.getName(), modifiedSubValue);
                                         }
                                     } catch (IllegalAccessException e) {
                                         e.printStackTrace();
                                     }
                                 }
-                            } else if (modifiedField.getName() == "pet") {
+                            } else if (modifiedField.getName() == PET) {
                                 createObject(modified, modifiedField, i, j);
-                            } else if (modifiedField.getName() == "nickNames") {
-                                System.out.printf("%d.%d.%d %s: %s %s\n", i, j, k, "Create", modifiedField.getName(), getValue(modified, modifiedField));
+                            } else if (modifiedField.getName() == NICK_NAMES) {
+                                System.out.printf("%d.%d.%d %s: %s %s\n", i, j, k, CREATE, modifiedField.getName(), getValue(modified, modifiedField));
                             }
                         } else if (originalValue != null && modifiedValue == null && originalField.getName() == modifiedField.getName()) {
                             i++;
-                            System.out.printf("%d %s %s\n", i, "Delete", modifiedField.getName());
+                            System.out.printf("%d %s %s\n", i, DELETE, modifiedField.getName());
                         }
                     }
                 }
@@ -133,9 +142,9 @@ public class DiffRender implements DiffRenderer {
                     Object originalSubValue = originalSubField.get(originalField.get(originalValue));
                     Object modifiedSubValue = modifiedSubField.get(modifiedField.get(modifiedValue));
 
-                    if (originalSubValue != null && modifiedSubValue != null && originalSubField.getName() == modifiedSubField.getName() && originalSubValue.toString() != modifiedSubValue.toString() && originalSubField.getName() != "serialVersionUID") {
-                        System.out.printf("%d.%d %s: %s\n", i, j, "Update", originalField.getName());
-                        System.out.printf("%d.%d.%d %s: %s from %s to %s\n", i, j, l, "Update", originalSubField.getName(), originalSubValue.toString(), modifiedSubValue.toString());
+                    if (originalSubValue != null && modifiedSubValue != null && originalSubField.getName() == modifiedSubField.getName() && originalSubValue.toString() != modifiedSubValue.toString() && originalSubField.getName() != SERIAL_VERSION_UID) {
+                        System.out.printf("%d.%d %s: %s\n", i, j, UPDATE, originalField.getName());
+                        System.out.printf("%d.%d.%d %s: %s from %s to %s\n", i, j, l, UPDATE, originalSubField.getName(), originalSubValue.toString(), modifiedSubValue.toString());
                     }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -151,8 +160,8 @@ public class DiffRender implements DiffRenderer {
             declaredField.setAccessible(true);
             try {
                 Object modifiedSubValue = declaredField.get(field.get(value));
-                if (modifiedSubValue != null && declaredField.getName() != "serialVersionUID") {
-                    System.out.printf("%d.%d.%d %s: %s as %s\n",i, j, k, "Create", declaredField.getName(), modifiedSubValue);
+                if (modifiedSubValue != null && declaredField.getName() != SERIAL_VERSION_UID) {
+                    System.out.printf("%d.%d.%d %s: %s as %s\n",i, j, k, CREATE, declaredField.getName(), modifiedSubValue);
                 }
             } catch (IllegalAccessException e) {
 
